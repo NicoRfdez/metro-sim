@@ -1,0 +1,287 @@
+/* 
+ * 4. Tema oscuro/neutral accesible de alto contraste 
+ * Tipografía: Inter (Sans-Serif moderna)
+ */
+:root {
+    /* Paleta Neutra / Tema Oscuro (Slate) */
+    --bg-base: #0f172a;       /* Fondo general muy oscuro */
+    --bg-surface: #1e293b;    /* Fondo de paneles (ligeramente más claro) */
+    --bg-surface-alt: #334155;/* Fondo alternativo para hover/bordes */
+    --text-primary: #f8fafc;  /* Texto principal claro y contrastante */
+    --text-secondary: #94a3b8;/* Texto secundario para etiquetas/contexto */
+    --border-color: #334155;  /* Bordes sutiles para delimitar zonas */
+    
+    /* Colores Oficiales Metro de Santiago */
+    --metro-l1: #E42228; /* Línea 1 - Rojo */
+    --metro-l2: #FFD200; /* Línea 2 - Amarillo */
+    --metro-l3: #8C543A; /* Línea 3 - Café */
+    --metro-l4: #002365; /* Línea 4 - Azul */
+    --metro-l4a: #0087CE;/* Línea 4A - Celeste */
+    --metro-l5: #00934F; /* Línea 5 - Verde */
+    --metro-l6: #A276B4; /* Línea 6 - Morado */
+    
+    /* Variables de Layout (espaciados uniformes) */
+    --header-height: 64px;
+    --gap-size: 1.5rem;
+    --padding-size: 1.5rem;
+    --border-radius: 12px;
+}
+
+/* 1. Reset y Configuración de Pantalla Completa (Estática) */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100vw;
+    height: 100vh;           /* Altura fija al 100% de la ventana */
+    overflow: hidden;        /* Previene cualquier scroll nativo (vertical u horizontal) */
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Contenedor principal de la aplicación */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* 2. Encabezado Superior (Header) delgado */
+.dashboard-header {
+    height: var(--header-height);
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--padding-size);
+    flex-shrink: 0;          /* Evitar que flexbox encoja el header */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.header-titles {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+}
+
+.project-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    /* Efecto de texto con gradiente para aspecto moderno */
+    background: linear-gradient(90deg, #f8fafc, #cbd5e1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.project-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+/* Badges informativos en el header */
+.header-badges {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px; /* Forma de píldora (Pill) */
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.status-live {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.data-source {
+    background-color: rgba(56, 189, 248, 0.15);
+    color: #7dd3fc;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* 3. Contenedor Principal (Layout a 2 columnas) */
+.dashboard-main {
+    display: flex;
+    flex: 1; /* Ocupa el resto de la pantalla debajo del header */
+    padding: var(--padding-size);
+    gap: var(--gap-size);
+    height: calc(100vh - var(--header-height));
+}
+
+/* Panel Izquierdo (~35%) */
+.left-panel {
+    width: 35%;
+    min-width: 300px;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-size);
+    /* Permitir scroll solo dentro del panel izquierdo si el contenido es mucho */
+    overflow-y: auto;
+    padding-right: 0.5rem; /* Espacio para scrollbar si aparece */
+}
+
+/* Personalización del scrollbar panel izquierdo */
+.left-panel::-webkit-scrollbar {
+    width: 6px;
+}
+.left-panel::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+}
+
+/* Panel Derecho (~65%) */
+.right-panel {
+    flex: 1; /* Ocupa el espacio restante (aprox 65%) */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Estilos compartidos para las secciones del panel izquierdo */
+.control-section {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.control-section h2 {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+/* Cuadro de contexto y narrativa */
+.context-box p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+}
+
+/* Menú de selección de línea */
+.styled-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    appearance: none;
+    /* Flecha personalizada */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem top 50%;
+    background-size: 0.65rem auto;
+}
+
+.styled-select:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+.styled-select option {
+    background-color: var(--bg-surface);
+}
+
+/* Indicadores Métricos Clave */
+.metric-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1rem;
+}
+
+.metric-card {
+    background-color: var(--bg-base);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.metric-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.metric-value small {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+}
+
+.status-ok {
+    color: #4ade80; /* Verde brillante para estado operativo */
+}
+
+/* 4. Contenedor Destacado de Visualización (Panel Derecho) */
+.visualization-container {
+    flex: 1; /* Ocupa toda el alto del panel derecho */
+    /* Fondo contrastante sutil, un poco más oscuro que surface para destacar la vis */
+    background-color: #0b1121; 
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    position: relative;
+    overflow: hidden; /* Asegurar que los gráficos que excedan se recorten o se manejen internamente */
+    display: block; /* Mejor que flex para que Plotly calcule bien su tamaño */
+    /* Sombra interna para dar sensación de profundidad al panel de visualización */
+    box-shadow: inset 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* Placeholder temporal para la visualización */
+.viz-placeholder {
+    text-align: center;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    max-width: 400px;
+}
+
+.viz-icon {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+.viz-placeholder p {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.viz-placeholder span {
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
