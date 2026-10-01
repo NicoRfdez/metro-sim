@@ -1,8 +1,13 @@
+'use client';
+
 import Image from "next/image";
 import Script from "next/script";
+import { useState } from "react";
 import styles from "./styles.module.css";
+import MapWrapper from "./components/MapWrapper";
 
 export default function Home() {
+  const [selectedLine, setSelectedLine] = useState('all');
   return (
     <>
       {/* Contenedor principal del dashboard (100vh, estático) */}
@@ -37,7 +42,12 @@ export default function Home() {
                   {/* Menú de selección de línea */}
                   <section className={`${styles['control-section']} ${styles['line-selection']}`}>
                       <h2>Selección de Línea</h2>
-                      <select id="line-selector" className={styles['styled-select']}>
+                      <select 
+                          id="line-selector" 
+                          className={styles['styled-select']}
+                          value={selectedLine}
+                          onChange={(e) => setSelectedLine(e.target.value)}
+                      >
                           <option value="all">Toda la Red</option>
                           <option value="L1">Línea 1 (San Pablo - Los Dominicos)</option>
                           <option value="L2">Línea 2 (Vespucio Norte - Hospital El Pino)</option>
@@ -73,14 +83,7 @@ export default function Home() {
               <section className={styles['right-panel']}>
                   {/* Contenedor destacado para la vista InfoVis (D3.js, Canvas, etc.) */}
                   <div className={styles['visualization-container']} id="viz-container">
-                      
-                      {/* Placeholder visual mientras no haya renderizado de datos */}
-                      <div className={styles['viz-placeholder']}>
-                          <div className={styles['viz-icon']}>🚇</div>
-                          <p>Área de Visualización Principal</p>
-                          <span>(Aquí se renderizará el mapa topológico / diagrama de flujo de la línea seleccionada)</span>
-                      </div>
-
+                      <MapWrapper selectedLine={selectedLine} />
                   </div>
               </section>
               
@@ -88,7 +91,7 @@ export default function Home() {
       </div>
       
       {/* Librerías y Scripts */}
-      <Script src="https://cdn.plot.ly/plotly-2.32.0.min.js" strategy="lazyOnload" />
+      <Script src="https://cdn.plot.ly/plotly-2.32.0.min.js" strategy="beforeInteractive" />
       {/* <Script src="/app.js" strategy="lazyOnload" /> */}
     </>
   );
