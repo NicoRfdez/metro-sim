@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Route, Stop, Trip, StopTime, Shape
+from .models import Route, Stop, Trip, StopTime, Shape, PassengerLoad
 
 class RouteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,4 +24,9 @@ class StopTimeSerializer(serializers.ModelSerializer):
 class ShapeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shape
+        fields = '__all__'
+
+class PassengerLoadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PassengerLoad
         fields = '__all__'

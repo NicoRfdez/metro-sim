@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import Route, Stop, Trip, StopTime, Shape
-from .serializers import RouteSerializer, StopSerializer, TripSerializer, StopTimeSerializer, ShapeSerializer
+from .models import Route, Stop, Trip, StopTime, Shape, PassengerLoad
+from .serializers import RouteSerializer, StopSerializer, TripSerializer, StopTimeSerializer, ShapeSerializer, PassengerLoadSerializer
 
 class RouteViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Route.objects.all()
@@ -24,3 +24,8 @@ class ShapeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Shape.objects.all()
     serializer_class = ShapeSerializer
     filterset_fields = ['shape_id']
+
+class PassengerLoadViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = PassengerLoad.objects.all()
+    serializer_class = PassengerLoadSerializer
+    filterset_fields = ['stop', 'hour']

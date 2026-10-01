@@ -1,16 +1,16 @@
-/* Contenedor principal de la aplicación */
 .dashboard-container {
     display: flex;
     flex-direction: column;
     height: 100vh;
     width: 100vw;
+    background: var(--bg-base);
 }
 
 /* 2. Encabezado Superior (Header) delgado */
 .dashboard-header {
     height: var(--header-height);
     background-color: var(--bg-surface);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--accent);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -18,34 +18,109 @@
     flex-shrink: 0;          /* Evitar que flexbox encoja el header */
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     z-index: 10;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animación del tren de metro y partículas */
+.train-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.train-wrapper {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 30px;
+    animation-name: trainMove;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+.train {
+    width: 100%;
+    height: 100%;
+    /* Efecto de resplandor leve en el tren */
+    filter: drop-shadow(0 0 4px rgba(228, 34, 40, 0.3));
+}
+
+@keyframes trainMove {
+    0% {
+        left: -800px;
+    }
+    100% {
+        left: 110%;
+    }
+}
+
+.particle {
+    position: absolute;
+    height: 2px;
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 1px;
+}
+
+/* Speed lines/sparks attached to the train, trailing behind */
+.p1 {
+    width: 40px;
+    top: calc(50% + 10px);
+    animation: spark 0.4s infinite alternate;
+    left: -45px; 
+}
+
+.p2 {
+    width: 20px;
+    top: calc(50% - 5px);
+    animation: spark 0.2s infinite alternate;
+    left: -25px;
+}
+
+.p3 {
+    width: 60px;
+    top: calc(50% + 15px);
+    animation: spark 0.6s infinite alternate;
+    left: -70px;
+}
+
+@keyframes spark {
+    0% { opacity: 0.1; transform: translateX(10px) scaleX(0.5); }
+    100% { opacity: 1; transform: translateX(-10px) scaleX(1.5); }
 }
 
 .header-titles {
     display: flex;
     align-items: baseline;
     gap: 1rem;
+    position: relative;
+    z-index: 1;
 }
 
 .project-title {
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: -0.025em;
-    /* Efecto de texto con gradiente para aspecto moderno */
-    background: linear-gradient(90deg, #f8fafc, #cbd5e1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--accent);
 }
 
 .project-subtitle {
     font-size: 0.875rem;
     color: var(--text-secondary);
-    font-weight: 400;
+    font-weight: 500;
 }
 
 /* Badges informativos en el header */
 .header-badges {
     display: flex;
     gap: 0.75rem;
+    position: relative;
+    z-index: 1;
 }
 
 .badge {
@@ -113,23 +188,23 @@
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 1.25rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .control-section h2 {
     font-size: 0.875rem;
     text-transform: uppercase;
-    color: var(--text-secondary);
+    color: var(--accent); /* Red title */
     letter-spacing: 0.05em;
     margin-bottom: 1rem;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 /* Cuadro de contexto y narrativa */
 .context-box p {
     font-size: 0.95rem;
     line-height: 1.6;
-    color: #cbd5e1;
+    color: var(--text-secondary);
 }
 
 /* Menú de selección de línea */
@@ -170,10 +245,10 @@
 }
 
 .metric-card {
-    background-color: var(--bg-base);
+    background-color: rgba(200, 68, 42, 0.05); /* Very light red tint */
     padding: 1rem;
     border-radius: 8px;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(200, 68, 42, 0.15);
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
@@ -182,11 +257,13 @@
 .metric-label {
     font-size: 0.75rem;
     color: var(--text-secondary);
+    font-weight: 600;
 }
 
 .metric-value {
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: 800;
+    color: var(--accent); /* Metro Red */
 }
 
 .metric-value small {
@@ -202,15 +279,13 @@
 /* 4. Contenedor Destacado de Visualización (Panel Derecho) */
 .visualization-container {
     flex: 1; /* Ocupa toda el alto del panel derecho */
-    /* Fondo contrastante sutil, un poco más oscuro que surface para destacar la vis */
-    background-color: #0b1121; 
-    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface); 
+    border: 1px solid var(--border-color); 
     border-radius: var(--border-radius);
     position: relative;
-    overflow: hidden; /* Asegurar que los gráficos que excedan se recorten o se manejen internamente */
-    display: block; /* Mejor que flex para que Plotly calcule bien su tamaño */
-    /* Sombra interna para dar sensación de profundidad al panel de visualización */
-    box-shadow: inset 0 4px 20px rgba(0,0,0,0.3);
+    overflow: hidden; 
+    display: block; 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
 }
 
 /* Placeholder temporal para la visualización */

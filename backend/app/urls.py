@@ -8,6 +8,7 @@ router.register(r'stops', views.StopViewSet)
 router.register(r'trips', views.TripViewSet)
 router.register(r'stoptimes', views.StopTimeViewSet)
 router.register(r'shapes', views.ShapeViewSet)
+router.register(r'loads', views.PassengerLoadViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

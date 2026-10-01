@@ -73,3 +73,17 @@ class Shape(models.Model):
 
     def __str__(self):
         return f"{self.shape_id} - {self.shape_pt_sequence}"
+
+class PassengerLoad(models.Model):
+    stop = models.ForeignKey(Stop, on_delete=models.CASCADE, related_name='loads')
+    hour = models.IntegerField()  # 0 to 23
+    volume = models.IntegerField() # Synthetic passenger count
+
+    class Meta:
+        unique_together = ('stop', 'hour')
+        indexes = [
+            models.Index(fields=['hour']),
+        ]
+
+    def __str__(self):
+        return f"{self.stop_id} - Hour {self.hour}: {self.volume} pax"

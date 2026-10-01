@@ -4,13 +4,14 @@
   --background: #ffffff;
   --foreground: #171717;
   
-  /* Paleta Neutra / Tema Oscuro (Slate) de MetroVis */
-  --bg-base: #0f172a;       /* Fondo general muy oscuro */
-  --bg-surface: #1e293b;    /* Fondo de paneles (ligeramente más claro) */
-  --bg-surface-alt: #334155;/* Fondo alternativo para hover/bordes */
-  --text-primary: #f8fafc;  /* Texto principal claro y contrastante */
-  --text-secondary: #94a3b8;/* Texto secundario para etiquetas/contexto */
-  --border-color: #334155;  /* Bordes sutiles para delimitar zonas */
+  /* Paleta InfoVis */
+  --bg-base: #ebe2d2; /* paper */
+  --bg-surface: #f4ece0; /* cream */
+  --bg-surface-alt: rgba(244, 236, 224, 0.85);
+  --text-primary: #1a1a1a; /* ink */
+  --text-secondary: rgba(26, 26, 26, 0.6);
+  --border-color: rgba(26, 26, 26, 0.2);
+  --accent: #c8442a; /* brick */
   
   /* Colores Oficiales Metro de Santiago */
   --metro-l1: #E42228; /* Línea 1 - Rojo */
@@ -35,12 +36,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Remove dark mode override to keep the light friendly theme consistent */
 
 * {
     margin: 0;

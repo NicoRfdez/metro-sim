@@ -27,5 +27,12 @@ export const metroApi = {
         const res = await fetch(`${API_BASE_URL}/shapes/?shape_id=${shapeId}`);
         if (!res.ok) throw new Error('Failed to fetch shapes');
         return res.json();
+    },
+
+    // Obtener la afluencia de pasajeros por hora
+    getPassengerLoads: async (hour: number) => {
+        const res = await fetch(`${API_BASE_URL}/loads/?hour=${hour}`);
+        if (!res.ok) throw new Error('Failed to fetch passenger loads');
+        return res.json();
     }
 };

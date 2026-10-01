@@ -2,25 +2,53 @@
 
 import Image from "next/image";
 import Script from "next/script";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./styles.module.css";
 import MapWrapper from "./components/MapWrapper";
+import TrainAnimation from "./components/TrainAnimation";
 
 export default function Home() {
   const [selectedLine, setSelectedLine] = useState('all');
+  const [startHour, setStartHour] = useState(6);
+  const [endHour, setEndHour] = useState(23);
+  const [currentHour, setCurrentHour] = useState(6);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [metrics, setMetrics] = useState({ totalPax: 0, averagePax: 0, topStations: [] as {name: string, volume: number}[] });
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (isPlaying) {
+      intervalRef.current = setInterval(() => {
+        setCurrentHour((prev) => {
+          if (prev >= endHour) {
+            setIsPlaying(false);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isPlaying, endHour]);
   return (
     <>
       {/* Contenedor principal del dashboard (100vh, estático) */}
       <div className={styles['dashboard-container']}>
-          
           {/* 2. Encabezado Superior */}
           <header className={styles['dashboard-header']}>
               <div className={styles['header-titles']}>
-                  <h1 className={styles['project-title']}>MetroVis Santiago</h1>
-                  <span className={styles['project-subtitle']}>Visualización de Flujos y Simulación GTFS</span>
+                  <a href="/" style={{ textDecoration: 'none' }}>
+                      <h1 className={styles['project-title']}>MetroVis Santiago</h1>
+                  </a>
               </div>
-              <div className={styles['header-badges']}>
-                  <span className={`${styles.badge} ${styles['data-source']}`}>Datos: GTFS Update</span>
+              
+              {/* Animación dinámica de trenes de metro (ahora inicia a la derecha del título) */}
+              <div style={{ flex: 1, position: 'relative', height: '100%', overflow: 'hidden', marginLeft: '2rem' }}>
+                  <TrainAnimation />
               </div>
           </header>
 
@@ -34,8 +62,9 @@ export default function Home() {
                   <section className={`${styles['control-section']} ${styles['context-box']}`}>
                       <h2>Contexto de la Simulación</h2>
                       <p>
-                          Explora la simulación en tiempo real del flujo de pasajeros y el estado de la red de Metro de Santiago. 
-                          Selecciona una línea específica para ver detalles de afluencia o mantén la vista global de la red.
+                          Esta plataforma visualiza la carga estimada de pasajeros en la red de Metro de Santiago a partir de datos GTFS.
+                          A través de esta simulación, puedes observar cómo evoluciona la congestión de la red a lo largo del día y 
+                          descubrir los cuellos de botella estación por estación.
                       </p>
                   </section>
 
@@ -59,21 +88,106 @@ export default function Home() {
                       </select>
                   </section>
 
+                  {/* Selector de Rango de Horas para Simulación */}
+                  <section className={`${styles['control-section']} ${styles['time-selection']}`}>
+                      <h2>Simulación de Afluencia</h2>
+                      
+                      {/* Timeline Slider (Controls Current Hour) */}
+                      <div style={{ marginBottom: '1.5rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>
+                              <span>{startHour}:00</span>
+                              <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '1rem' }}>{currentHour}:00 hrs</span>
+                              <span>{endHour}:00</span>
+                          </div>
+                          <input 
+                              type="range" 
+                              min={startHour} 
+                              max={endHour} 
+                              value={currentHour} 
+                              onChange={(e) => {
+                                  setCurrentHour(parseInt(e.target.value));
+                                  setIsPlaying(false);
+                              }}
+                              style={{ width: '100%', cursor: 'pointer' }}
+                          />
+                      </div>
+
+                      {/* Interval selection (Bounds) */}
+                      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
+                          <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                              Hora Inicio
+                              <select 
+                                  value={startHour} 
+                                  onChange={(e) => {
+                                      const val = parseInt(e.target.value);
+                                      setStartHour(val);
+                                      if (currentHour < val) setCurrentHour(val);
+                                  }}
+                                  className={styles['styled-select']}
+                                  style={{ padding: '0.25rem', marginTop: '0.25rem' }}
+                              >
+                                  {Array.from({length: 18}, (_, i) => i + 6).filter(h => h < endHour).map(h => (
+                                      <option key={h} value={h}>{h}:00</option>
+                                  ))}
+                              </select>
+                          </label>
+                          <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                              Hora Fin
+                              <select 
+                                  value={endHour} 
+                                  onChange={(e) => {
+                                      const val = parseInt(e.target.value);
+                                      setEndHour(val);
+                                      if (currentHour > val) setCurrentHour(val);
+                                  }}
+                                  className={styles['styled-select']}
+                                  style={{ padding: '0.25rem', marginTop: '0.25rem' }}
+                              >
+                                  {Array.from({length: 18}, (_, i) => i + 6).filter(h => h > startHour).map(h => (
+                                      <option key={h} value={h}>{h}:00</option>
+                                  ))}
+                              </select>
+                          </label>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                          <button 
+                              onClick={() => {
+                                  if (!isPlaying && currentHour >= endHour) {
+                                      setCurrentHour(startHour);
+                                  }
+                                  setIsPlaying(!isPlaying);
+                              }}
+                              style={{
+                                  background: isPlaying ? '#ef4444' : '#00934F',
+                                  color: 'white',
+                                  border: 'none',
+                                  padding: '0.5rem 2rem',
+                                  borderRadius: '20px',
+                                  cursor: 'pointer',
+                                  fontWeight: 'bold',
+                                  transition: 'background 0.3s',
+                                  width: '100%'
+                              }}
+                          >
+                              {isPlaying ? '⏸ Pausar Simulación' : '▶ Reproducir Simulación'}
+                          </button>
+                      </div>
+                  </section>
+
                   {/* Indicadores métricos clave */}
                   <section className={`${styles['control-section']} ${styles.metrics}`}>
-                      <h2>Métricas en Tiempo Real</h2>
+                      <h2>Estaciones Más Congestionadas</h2>
                       <div className={styles['metric-cards']}>
-                          <div className={styles['metric-card']}>
-                              <span className={styles['metric-label']}>Afluencia Estimada</span>
-                              <span className={styles['metric-value']}>45,200 <small>pax/h</small></span>
-                          </div>
-                          <div className={styles['metric-card']}>
-                              <span className={styles['metric-label']}>Estado de Red</span>
-                              <span className={`${styles['metric-value']} ${styles['status-ok']}`}>Operativa</span>
-                          </div>
-                          <div className={styles['metric-card']}>
-                              <span className={styles['metric-label']}>Trenes Activos</span>
-                              <span className={styles['metric-value']}>114</span>
+                          <div className={styles['metric-card']} style={{ gridColumn: '1 / -1' }}>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                  {metrics.topStations.map((s, i) => (
+                                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '4px', paddingTop: '4px' }}>
+                                          <span><strong>{i+1}.</strong> {s.name}</span>
+                                      </div>
+                                  ))}
+                                  {metrics.topStations.length === 0 && <span style={{ padding: '0.5rem 0' }}>Sin datos para esta hora</span>}
+                              </span>
                           </div>
                       </div>
                   </section>
@@ -83,7 +197,7 @@ export default function Home() {
               <section className={styles['right-panel']}>
                   {/* Contenedor destacado para la vista InfoVis (D3.js, Canvas, etc.) */}
                   <div className={styles['visualization-container']} id="viz-container">
-                      <MapWrapper selectedLine={selectedLine} />
+                      <MapWrapper selectedLine={selectedLine} currentHour={currentHour} onMetricsUpdate={setMetrics} />
                   </div>
               </section>
               
