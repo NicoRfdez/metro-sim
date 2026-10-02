@@ -14,10 +14,46 @@ export default function Home() {
   const [currentHour, setCurrentHour] = useState(6);
   const [isPlaying, setIsPlaying] = useState(false);
   const [metrics, setMetrics] = useState({ totalPax: 0, averagePax: 0, topStations: [] as {name: string, volume: number}[] });
+  
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const beepAudioRef = useRef<HTMLAudioElement | null>(null);
+  const doorsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const metroAudioRef = useRef<HTMLAudioElement | null>(null);
+  const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+        beepAudioRef.current = new Audio('/sound/beep.mp3');
+        
+        doorsAudioRef.current = new Audio('/sound/cierre puertas.wav');
+        doorsAudioRef.current.playbackRate = 1.5;
+        
+        metroAudioRef.current = new Audio('/sound/sonidometro.mp3');
+        metroAudioRef.current.volume = 0.2; // softer volume
+        metroAudioRef.current.loop = true; // looping
+        
+        const handleDoorsEnd = () => {
+            metroAudioRef.current?.play().catch(e => console.error("Error playing metro sound:", e));
+        };
+        doorsAudioRef.current.addEventListener('ended', handleDoorsEnd);
+        return () => doorsAudioRef.current?.removeEventListener('ended', handleDoorsEnd);
+    }
+  }, []);
+
+  const playSound = (path: string) => {
+    const audio = new Audio(path);
+    audio.play().catch(e => console.error("Error playing sound:", e));
+  };
 
   useEffect(() => {
     if (isPlaying) {
+      // Start sounds sequence
+      beepAudioRef.current?.play().catch(e => console.error(e));
+      playTimeoutRef.current = setTimeout(() => {
+          doorsAudioRef.current?.play().catch(e => console.error(e));
+      }, 500);
+
+      // Start tick
       intervalRef.current = setInterval(() => {
         setCurrentHour((prev) => {
           if (prev >= endHour) {
@@ -27,11 +63,29 @@ export default function Home() {
           return prev + 1;
         });
       }, 1000);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+    } else {
+      // Pause sequence
+      if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
+      
+      if (beepAudioRef.current) {
+          beepAudioRef.current.pause();
+          beepAudioRef.current.currentTime = 0;
+      }
+      if (doorsAudioRef.current) {
+          doorsAudioRef.current.pause();
+          doorsAudioRef.current.currentTime = 0;
+      }
+      if (metroAudioRef.current) {
+          metroAudioRef.current.pause();
+      }
+
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     }
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
     };
   }, [isPlaying, endHour]);
   return (
@@ -75,7 +129,10 @@ export default function Home() {
                           id="line-selector" 
                           className={styles['styled-select']}
                           value={selectedLine}
-                          onChange={(e) => setSelectedLine(e.target.value)}
+                          onChange={(e) => {
+                              setSelectedLine(e.target.value);
+                              playSound('/sound/cambio_de_linea.wav');
+                          }}
                       >
                           <option value="all">Toda la Red</option>
                           <option value="L1">Línea 1 (San Pablo - Los Dominicos)</option>

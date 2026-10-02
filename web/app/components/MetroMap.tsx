@@ -198,9 +198,22 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
 
         const config = { responsive: true, displayModeBar: false };
         
-        if (window.Plotly) {
+        if (window.Plotly && mapRef.current) {
             // Plotly.react is much faster than newPlot for updating existing charts
-            window.Plotly.react(mapRef.current, traces, layout, config);
+            window.Plotly.react(mapRef.current, traces, layout, config).then(() => {
+                const node = mapRef.current as any;
+                if (node && !node.__legendClickBound) {
+                    node.on('plotly_legendclick', () => {
+                        new Audio('/sound/soft click.mp3').play().catch(e => console.error(e));
+                        return true;
+                    });
+                    node.on('plotly_legenddoubleclick', () => {
+                        new Audio('/sound/soft click.mp3').play().catch(e => console.error(e));
+                        return true;
+                    });
+                    node.__legendClickBound = true;
+                }
+            });
         }
     }, [currentHour, networkTopology, allLoadsMap, selectedLine]);
 
