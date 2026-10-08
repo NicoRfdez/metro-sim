@@ -88,6 +88,13 @@ export default function Home() {
       if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
     };
   }, [isPlaying, endHour]);
+  const timeCategory = (() => {
+    const h = currentHour;
+    if ((h >= 7 && h <= 8) || (h >= 18 && h <= 19)) return { label: 'Horario Punta', color: '#ef4444' };
+    if ((h >= 9 && h <= 17) || h === 20) return { label: 'Horario Valle', color: '#22c55e' };
+    return { label: 'Horario Bajo', color: '#3b82f6' };
+  })();
+
   return (
     <>
       {/* Contenedor principal del dashboard (100vh, estático) */}
@@ -96,7 +103,7 @@ export default function Home() {
           <header className={styles['dashboard-header']}>
               <div className={styles['header-titles']}>
                   <a href="/" style={{ textDecoration: 'none' }}>
-                      <h1 className={styles['project-title']}>MetroVis Santiago</h1>
+                      <h1 className={styles['project-title']}>Afluencia actual de la red de metro</h1>
                   </a>
               </div>
               
@@ -254,6 +261,37 @@ export default function Home() {
               <section className={styles['right-panel']}>
                   {/* Contenedor destacado para la vista InfoVis (D3.js, Canvas, etc.) */}
                   <div className={styles['visualization-container']} id="viz-container">
+                      {/* Overlay para la Hora y Tipo de Horario */}
+                      <div style={{
+                          position: 'absolute',
+                          top: '20px',
+                          right: '20px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          padding: '1rem',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                          zIndex: 10,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          border: '1px solid #e2e8f0'
+                      }}>
+                          <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b' }}>
+                              {currentHour}:00 hrs
+                          </span>
+                          <span style={{
+                              marginTop: '0.5rem',
+                              padding: '0.25rem 0.75rem',
+                              borderRadius: '20px',
+                              backgroundColor: `${timeCategory.color}20`,
+                              color: timeCategory.color,
+                              fontWeight: 'bold',
+                              fontSize: '0.85rem',
+                              border: `1px solid ${timeCategory.color}`
+                          }}>
+                              {timeCategory.label}
+                          </span>
+                      </div>
                       <MapWrapper selectedLine={selectedLine} currentHour={currentHour} onMetricsUpdate={setMetrics} />
                   </div>
               </section>

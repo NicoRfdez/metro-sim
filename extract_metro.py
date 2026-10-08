@@ -2,7 +2,7 @@ import csv
 import json
 import os
 
-base_path = '/home/nicofdez/Documentos/uc/2026-2/infovis/metro-sim/data/raw/GTFS_20260829'
+base_path = os.path.join(os.path.dirname(__file__), 'data', 'raw')
 
 def read_csv(filename):
     with open(os.path.join(base_path, filename), 'r', encoding='utf-8') as f:
@@ -66,6 +66,7 @@ output = {
     'paths': route_paths
 }
 
-with open('/home/nicofdez/Documentos/uc/2026-2/infovis/metro-sim/web/metro_data.json', 'w', encoding='utf-8') as f:
+output_path = os.path.join(os.path.dirname(__file__), 'web', 'public', 'metro_data.json')
+with open(output_path, 'w', encoding='utf-8') as f:
     json.dump(output, f)
 print("Data extracted successfully with built-in csv!")
