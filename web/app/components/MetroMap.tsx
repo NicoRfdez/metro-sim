@@ -1,12 +1,38 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { metroApi } from '../services/api';
+import { metroApi, type Stop, type StopTime } from '../services/api';
+import { asset } from '../lib/paths';
+
+// Tipos mínimos de Plotly (cargado vía CDN en layout.tsx)
+type PlotlyTrace = Record<string, unknown>;
+interface PlotlyHoverEvent {
+    points?: { customdata?: number }[];
+}
+interface PlotlyElement extends HTMLDivElement {
+    on: (event: string, handler: (data: PlotlyHoverEvent) => unknown) => void;
+    __eventsBound?: boolean;
+}
+interface PlotlyStatic {
+    react: (el: HTMLElement, data: PlotlyTrace[], layout: Record<string, unknown>, config: Record<string, unknown>) => Promise<unknown>;
+}
 
 declare global {
     interface Window {
-        Plotly: any;
+        Plotly?: PlotlyStatic;
+        webkitAudioContext?: typeof AudioContext;
     }
+}
+
+export interface MapMetrics {
+    totalPax: number;
+    averagePax: number;
+    topStations: { name: string; volume: number }[];
+}
+
+interface NetworkTopology {
+    stopMap: Map<string, Stop>;
+    lineStops: { line: string; stopTimes: StopTime[] }[];
 }
 
 const LINE_COLORS: Record<string, string> = {
@@ -27,7 +53,9 @@ const playSonification = (volume: number) => {
     try {
         if (typeof window === 'undefined') return;
         if (!audioCtx) {
-            audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const AudioCtor = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtor) return;
+            audioCtx = new AudioCtor();
         }
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
@@ -55,12 +83,12 @@ const playSonification = (volume: number) => {
     }
 };
 
-export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }: { selectedLine: string, currentHour: number, onMetricsUpdate?: (metrics: any) => void }) {
+export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }: { selectedLine: string, currentHour: number, onMetricsUpdate?: (metrics: MapMetrics) => void }) {
     const mapRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(true);
     
     // State to hold pre-fetched data
-    const [networkTopology, setNetworkTopology] = useState<any>(null);
+    const [networkTopology, setNetworkTopology] = useState<NetworkTopology | null>(null);
     const [allLoadsMap, setAllLoadsMap] = useState<Map<number, Map<string, number>> | null>(null);
     const [hoveredVolume, setHoveredVolume] = useState<number | null>(null);
 
@@ -73,21 +101,15 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
             try {
                 // Fetch all stops
                 const allStops = await metroApi.getAllStops();
-                const stopMap = new Map();
-                allStops.forEach((s: any) => stopMap.set(s.stop_id, s));
+                const stopMap = new Map<string, Stop>();
+                allStops.forEach((s) => stopMap.set(s.stop_id, s));
 
-                // Fetch routes and stops sequence
+                // Fetch routes and stops sequence (JSON estático o API según configuración)
                 const linesToDraw = selectedLine === 'all' ? ALL_LINES : [selectedLine];
-                const lineStops = [];
+                const lineStops: NetworkTopology['lineStops'] = [];
                 for (const line of linesToDraw) {
-                    const trips = await metroApi.getTripsByRoute(line, 0);
-                    if (trips.length === 0) continue;
-                    
-                    const middleIndex = Math.floor(trips.length / 2);
-                    const tripId = trips[middleIndex].trip_id;
-                    
-                    const stopTimes = await metroApi.getStopTimesByTrip(tripId);
-                    stopTimes.sort((a: any, b: any) => a.stop_sequence - b.stop_sequence);
+                    const stopTimes = await metroApi.getLineStops(line);
+                    if (stopTimes.length === 0) continue;
                     lineStops.push({ line, stopTimes });
                 }
 
@@ -103,7 +125,7 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
                 hoursToFetch.forEach((hour, idx) => {
                     const loadsForHour = allLoads[idx];
                     const loadMap = new Map<string, number>();
-                    loadsForHour.forEach((l: any) => loadMap.set(l.stop, l.volume));
+                    loadsForHour.forEach((l) => loadMap.set(l.stop, l.volume));
                     loadMapByHour.set(hour, loadMap);
                 });
                 
@@ -129,10 +151,10 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
 
         const { stopMap, lineStops } = networkTopology;
         const currentLoadMap = allLoadsMap.get(currentHour) || new Map<string, number>();
-        const traces: any[] = [];
+        const traces: PlotlyTrace[] = [];
 
         let totalPax = 0;
-        let stationLoads: {name: string, volume: number}[] = [];
+        const stationLoads: {name: string, volume: number}[] = [];
 
         for (const { line, stopTimes } of lineStops) {
             const lons: number[] = [];
@@ -142,7 +164,7 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
             const markerSizes: number[] = [];
             const markerColors: number[] = [];
 
-            stopTimes.forEach((st: any) => {
+            stopTimes.forEach((st) => {
                 const stopData = stopMap.get(st.stop); 
                 if (stopData) {
                     lons.push(stopData.stop_lon);
@@ -233,17 +255,17 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
         if (window.Plotly && mapRef.current) {
             // Plotly.react is much faster than newPlot for updating existing charts
             window.Plotly.react(mapRef.current, traces, layout, config).then(() => {
-                const node = mapRef.current as any;
+                const node = mapRef.current as PlotlyElement | null;
                 if (node && !node.__eventsBound) {
                     node.on('plotly_legendclick', () => {
-                        new Audio('/sound/soft click.mp3').play().catch(e => console.error(e));
+                        new Audio(asset('/sound/soft_click.mp3')).play().catch(e => console.error(e));
                         return true;
                     });
                     node.on('plotly_legenddoubleclick', () => {
-                        new Audio('/sound/soft click.mp3').play().catch(e => console.error(e));
+                        new Audio(asset('/sound/soft_click.mp3')).play().catch(e => console.error(e));
                         return true;
                     });
-                    node.on('plotly_hover', (data: any) => {
+                    node.on('plotly_hover', (data) => {
                         if (data && data.points && data.points.length > 0) {
                             const point = data.points[0];
                             if (point.customdata !== undefined) {
@@ -259,7 +281,7 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
                 }
             });
         }
-    }, [currentHour, networkTopology, allLoadsMap, selectedLine]);
+    }, [currentHour, networkTopology, allLoadsMap, selectedLine, onMetricsUpdate]);
 
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>

@@ -1,11 +1,12 @@
 'use client';
 
-import Image from "next/image";
-import Script from "next/script";
+import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import styles from "./styles.module.css";
 import MapWrapper from "./components/MapWrapper";
 import TrainAnimation from "./components/TrainAnimation";
+import type { MapMetrics } from "./components/MetroMap";
+import { asset } from "./lib/paths";
 
 export default function Home() {
   const [selectedLine, setSelectedLine] = useState('all');
@@ -13,7 +14,7 @@ export default function Home() {
   const [endHour, setEndHour] = useState(23);
   const [currentHour, setCurrentHour] = useState(6);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [metrics, setMetrics] = useState({ totalPax: 0, averagePax: 0, topStations: [] as {name: string, volume: number}[] });
+  const [metrics, setMetrics] = useState<MapMetrics>({ totalPax: 0, averagePax: 0, topStations: [] });
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const beepAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -23,12 +24,12 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-        beepAudioRef.current = new Audio('/sound/beep.mp3');
+        beepAudioRef.current = new Audio(asset('/sound/beep.mp3'));
         
-        doorsAudioRef.current = new Audio('/sound/cierre puertas.wav');
+        doorsAudioRef.current = new Audio(asset('/sound/cierre_puertas.wav'));
         doorsAudioRef.current.playbackRate = 1.5;
         
-        metroAudioRef.current = new Audio('/sound/sonidometro.mp3');
+        metroAudioRef.current = new Audio(asset('/sound/sonidometro.mp3'));
         metroAudioRef.current.volume = 0.2; // softer volume
         metroAudioRef.current.loop = true; // looping
         
@@ -41,7 +42,7 @@ export default function Home() {
   }, []);
 
   const playSound = (path: string) => {
-    const audio = new Audio(path);
+    const audio = new Audio(asset(path));
     audio.play().catch(e => console.error("Error playing sound:", e));
   };
 
@@ -102,9 +103,9 @@ export default function Home() {
           {/* 2. Encabezado Superior */}
           <header className={styles['dashboard-header']}>
               <div className={styles['header-titles']}>
-                  <a href="/" style={{ textDecoration: 'none' }}>
+                  <Link href="/" style={{ textDecoration: 'none' }}>
                       <h1 className={styles['project-title']}>Afluencia actual de la red de metro</h1>
-                  </a>
+                  </Link>
               </div>
               
               {/* Animación dinámica de trenes de metro (ahora inicia a la derecha del título) */}
@@ -298,10 +299,6 @@ export default function Home() {
               
           </main>
       </div>
-      
-      {/* Librerías y Scripts */}
-      <Script src="https://cdn.plot.ly/plotly-2.32.0.min.js" strategy="beforeInteractive" />
-      {/* <Script src="/app.js" strategy="lazyOnload" /> */}
     </>
   );
 }
