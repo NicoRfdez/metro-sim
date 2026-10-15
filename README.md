@@ -48,6 +48,7 @@ Metro Sim es un sistema integral para la simulación, visualización y análisis
 - **`/data`**: Datos crudos (archivos GTFS como `routes.txt`, `trips.txt`, `stop_times.txt` y `stops.txt`). No se versiona.
 - **`/analisis`**: Scripts y Jupyter Notebooks para el análisis de los datos de transporte público.
 - **`/hardware`**: Código fuente y esquemáticos de los componentes de hardware del simulador.
+- **`/docs`**: Documentación y capturas de pantalla de la plataforma.
 - **`extract_metro.py`**: Script ETL que procesa los GTFS crudos.
 - **`.github/workflows/deploy.yml`**: Pipeline de despliegue automático a GitHub Pages.
 
@@ -166,6 +167,9 @@ python3 -m http.server -d /tmp/site 8080
 ## 📜 Historial de Versiones
 
 ### v1.1: Publicación en GitHub Pages (actual)
+
+![Captura de pantalla de Metro Sim v1.1](docs/screenshots/metro-sim-v1.1.png)
+
 - Export estático de Next.js (`output: "export"`) con `basePath` `/metro-sim`.
 - Nuevo comando `python manage.py export_static_data` que genera `stops.json`, `lines.json`, `loads.json` y `meta.json`.
 - Capa de datos de doble modo (JSON estático o API Django) en `web/app/services/api.ts`.
