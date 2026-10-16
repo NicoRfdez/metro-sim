@@ -63,7 +63,7 @@
 .particle {
     position: absolute;
     height: 2px;
-    background: rgba(30, 41, 59, 0.4);
+    background: rgba(248, 250, 252, 0.4);
     border-radius: 1px;
 }
 
@@ -144,93 +144,141 @@
     border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
-/* 3. Contenedor Principal (Layout a 2 columnas) */
+/* 3. Contenedor Principal (Plana única sin divisiones) */
 .dashboard-main {
-    display: flex;
-    flex: 1; /* Ocupa el resto de la pantalla debajo del header */
-    padding: var(--padding-size);
-    gap: var(--gap-size);
+    position: relative;
+    flex: 1;
+    width: 100vw;
     height: calc(100vh - var(--header-height));
-}
-
-/* Panel Izquierdo (~35%) */
-.left-panel {
-    width: 35%;
-    min-width: 300px;
-    max-width: 450px;
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap-size);
-    /* Permitir scroll solo dentro del panel izquierdo si el contenido es mucho */
-    overflow-y: auto;
-    padding-right: 0.5rem; /* Espacio para scrollbar si aparece */
-}
-
-/* Personalización del scrollbar panel izquierdo */
-.left-panel::-webkit-scrollbar {
-    width: 6px;
-}
-.left-panel::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 4px;
-}
-
-/* Panel Derecho (~65%) */
-.right-panel {
-    flex: 1; /* Ocupa el espacio restante (aprox 65%) */
-    display: flex;
-    flex-direction: column;
-}
-
-/* Estilos compartidos para las secciones del panel izquierdo */
-.control-section {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 1.25rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-}
-
-.control-section h2 {
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    color: var(--accent); /* Red title */
-    letter-spacing: 0.05em;
-    margin-bottom: 1rem;
-    font-weight: 700;
-}
-
-/* Cuadro de contexto y narrativa */
-.context-box p {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--text-secondary);
-}
-
-/* Menú de selección de línea */
-.styled-select {
-    width: 100%;
-    padding: 0.75rem 1rem;
+    overflow: hidden;
     background-color: var(--bg-base);
+}
+
+/* Selector de Línea flotante arriba centrado */
+.top-line-selector {
+    position: absolute;
+    top: 0.65rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    background-color: rgba(30, 41, 59, 0.88);
+    backdrop-filter: blur(8px);
+    padding: 0.35rem 0.95rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.top-line-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.styled-select-compact {
+    background-color: transparent;
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1rem;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 600;
     font-family: inherit;
     cursor: pointer;
     outline: none;
-    transition: all 0.2s ease;
-    appearance: none;
-    /* Flecha personalizada */
+    padding-right: 1.4rem;
     background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
     background-repeat: no-repeat;
-    background-position: right 1rem top 50%;
+    background-position: right 0.2rem center;
     background-size: 0.65rem auto;
+    appearance: none;
 }
 
-.styled-select:focus {
-    border-color: #38bdf8;
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+.styled-select-compact option {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+}
+
+/* Tarjeta de simulación minimalista abajo a la izquierda */
+.minimal-sim-card {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 20;
+    width: 295px;
+    background-color: rgba(30, 41, 59, 0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 0.75rem 0.95rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.minimal-play-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease, background-color 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.minimal-play-btn:hover {
+    transform: scale(1.05);
+}
+
+.minimal-play-btn:active {
+    transform: scale(0.95);
+}
+
+.minimal-slider {
+    width: 100%;
+    cursor: pointer;
+    accent-color: #00934F;
+    height: 6px;
+    border-radius: 3px;
+}
+
+.mini-select {
+    background-color: rgba(15, 23, 42, 0.6);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.72rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+}
+
+.mini-select option {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+}
+
+/* Panel Izquierdo legacy (mantenido por compatibilidad) */
+.left-panel {
+    display: none;
+}
+
+/* Panel Derecho legacy */
+.right-panel {
+    width: 100%;
+    height: 100%;
 }
 
 .styled-select option {
@@ -245,10 +293,10 @@
 }
 
 .metric-card {
-    background-color: rgba(200, 68, 42, 0.05); /* Very light red tint */
+    background-color: rgba(224, 86, 56, 0.1);
     padding: 1rem;
     border-radius: 8px;
-    border: 1px solid rgba(200, 68, 42, 0.15);
+    border: 1px solid rgba(224, 86, 56, 0.25);
     display: flex;
     flex-direction: column;
     gap: 0.35rem;

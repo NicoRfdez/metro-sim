@@ -1,29 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0f172a;
+  --foreground: #f8fafc;
   
-  /* Paleta InfoVis */
-  --bg-base: #ebe2d2; /* paper */
-  --bg-surface: #f4ece0; /* cream */
-  --bg-surface-alt: rgba(244, 236, 224, 0.85);
-  --text-primary: #1a1a1a; /* ink */
-  --text-secondary: rgba(26, 26, 26, 0.6);
-  --border-color: rgba(26, 26, 26, 0.2);
-  --accent: #c8442a; /* brick */
+  /* Paleta Oscura (Slate) */
+  --bg-base: #0f172a;       /* Fondo general oscuro */
+  --bg-surface: #1e293b;    /* Fondo de paneles y tarjetas */
+  --bg-surface-alt: rgba(30, 41, 59, 0.85); /* Fondo alternativo translúcido */
+  --text-primary: #f8fafc;  /* Texto principal claro */
+  --text-secondary: #94a3b8;/* Texto secundario */
+  --border-color: rgba(255, 255, 255, 0.12); /* Bordes sutiles */
+  --accent: #e05638;        /* Acento rojo/ladrillo con alto contraste sobre fondo oscuro */
   
-  /* Colores Oficiales Metro de Santiago */
-  --metro-l1: #E42228; /* Línea 1 - Rojo */
-  --metro-l2: #FFD200; /* Línea 2 - Amarillo */
-  --metro-l3: #8C543A; /* Línea 3 - Café */
-  --metro-l4: #002365; /* Línea 4 - Azul */
-  --metro-l4a: #0087CE;/* Línea 4A - Celeste */
-  --metro-l5: #00934F; /* Línea 5 - Verde */
-  --metro-l6: #A276B4; /* Línea 6 - Morado */
+  /* Colores de Líneas de Metro accesibles para daltónicos (Paleta Wong / Okabe-Ito) */
+  --metro-l1: #D55E00; /* Línea 1 - Bermejo / Naranja rojizo */
+  --metro-l2: #F0E442; /* Línea 2 - Amarillo luminoso */
+  --metro-l3: #E69F00; /* Línea 3 - Naranja ámbar / Ocre */
+  --metro-l4: #0072B2; /* Línea 4 - Azul cobalto */
+  --metro-l4a: #56B4E9;/* Línea 4A - Celeste cielo */
+  --metro-l5: #009E73; /* Línea 5 - Verde azulado */
+  --metro-l6: #CC79A7; /* Línea 6 - Magenta púrpura */
   
   /* Variables de Layout (espaciados uniformes) */
-  --header-height: 64px;
+  --header-height: 52px;
   --gap-size: 1.5rem;
   --padding-size: 1.5rem;
   --border-radius: 12px;
@@ -32,8 +32,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 /* Remove dark mode override to keep the light friendly theme consistent */
@@ -48,8 +46,9 @@ html, body {
     width: 100vw;
     height: 100vh;           /* Altura fija al 100% de la ventana */
     overflow: hidden;        /* Previene cualquier scroll nativo (vertical u horizontal) */
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background-color: var(--bg-base);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.015em;
 }

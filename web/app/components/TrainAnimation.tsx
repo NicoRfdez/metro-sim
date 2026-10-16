@@ -11,13 +11,13 @@ interface TrainInstance {
 }
 
 const TRAIN_COLORS = [
-    '#e42228', // L1 Red
-    '#FFD200', // L2 Yellow
-    '#8C543A', // L3 Brown
-    '#002365', // L4 Blue
-    '#0087CE', // L4A Light Blue
-    '#00934F', // L5 Green
-    '#A276B4'  // L6 Purple
+    '#D55E00', // L1 Vermilion
+    '#F0E442', // L2 Yellow
+    '#E69F00', // L3 Amber Orange
+    '#0072B2', // L4 Blue
+    '#56B4E9', // L4A Sky Blue
+    '#009E73', // L5 Bluish Green
+    '#CC79A7'  // L6 Reddish Purple
 ];
 
 export default function TrainAnimation() {
