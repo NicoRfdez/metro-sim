@@ -111,6 +111,49 @@ const TERMINAL_CALLOUTS: Record<string, { start: { ax: number; ay: number }; end
 
 const ALL_LINES = ['L1', 'L2', 'L3', 'L4', 'L4A', 'L5', 'L6'];
 
+const LINE_NAMES: Record<string, string> = {
+    'L1': 'Línea 1',
+    'L2': 'Línea 2',
+    'L3': 'Línea 3',
+    'L4': 'Línea 4',
+    'L4A': 'Línea 4A',
+    'L5': 'Línea 5',
+    'L6': 'Línea 6',
+};
+
+// Encuadres precisos por línea individual para evitar sobreposiciones con la interfaz
+// (tarjeta de simulación abajo a la izquierda, escala cromática a la derecha y selector arriba)
+const LINE_FRAMING: Record<string, { lon: [number, number]; lat: [number, number] }> = {
+    'L1': {
+        lon: [-70.76, -70.50],
+        lat: [-33.48, -33.37]
+    },
+    'L2': {
+        lon: [-70.77, -70.55],
+        lat: [-33.63, -33.32]
+    },
+    'L3': {
+        lon: [-70.76, -70.52],
+        lat: [-33.49, -33.33]
+    },
+    'L4': {
+        lon: [-70.67, -70.47],
+        lat: [-33.64, -33.38]
+    },
+    'L4A': {
+        lon: [-70.73, -70.53],
+        lat: [-33.59, -33.47]
+    },
+    'L5': {
+        lon: [-70.80, -70.55],
+        lat: [-33.57, -33.38]
+    },
+    'L6': {
+        lon: [-70.75, -70.56],
+        lat: [-33.54, -33.39]
+    }
+};
+
 let audioCtx: AudioContext | null = null;
 
 const playSonification = (volume: number) => {
@@ -155,6 +198,12 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
     const [networkTopology, setNetworkTopology] = useState<NetworkTopology | null>(null);
     const [allLoadsMap, setAllLoadsMap] = useState<Map<number, Map<string, number>> | null>(null);
     const [hoveredVolume, setHoveredVolume] = useState<number | null>(null);
+    const [hiddenLines, setHiddenLines] = useState<Set<string>>(new Set());
+
+    // Resetear líneas ocultas cuando se cambia de línea en el selector
+    useEffect(() => {
+        setHiddenLines(new Set());
+    }, [selectedLine]);
 
     // 1. Fetch ALL data on mount (carga todas las 7 líneas una sola vez)
     useEffect(() => {
@@ -254,6 +303,7 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
 
         const activeLons: number[] = [];
         const activeLats: number[] = [];
+        const stationAnnotations: Record<string, unknown>[] = [];
 
         for (const { line, stopTimes } of linesToRender) {
             const lons: number[] = [];
@@ -277,39 +327,15 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
 
                 const cleanName = stopData.stop_name.split(' Dirección')[0].trim();
                 const volume = currentLoadMap.get(st.stop) || 0;
-                totalPax += volume;
-                stationLoads.push({ name: cleanName, volume });
+                
+                // Solo contabilizar métricas si la línea está visible
+                if (!isAll || !hiddenLines.has(line)) {
+                    totalPax += volume;
+                    stationLoads.push({ name: cleanName, volume });
+                }
 
                 const otherLines = COMBINATIONS[cleanName]?.filter(l => l !== line) ?? [];
                 const isComb = otherLines.length > 0;
-
-                // Etiquetas de estación mejoradas
-                if (!isAll) {
-                    if (isComb) {
-                        stationLabels.push(`${cleanName} · Comb. ${otherLines.join('/')}`);
-                    } else {
-                        stationLabels.push(cleanName);
-                    }
-
-                    // Posicionamiento alternado para evitar solapamientos entre estaciones vecinas
-                    const prev = idx > 0 ? validStops[idx - 1].data : null;
-                    const next = idx < validStops.length - 1 ? validStops[idx + 1].data : null;
-                    const dx = (next?.stop_lon ?? prev?.stop_lon ?? stopData.stop_lon) - (prev?.stop_lon ?? next?.stop_lon ?? stopData.stop_lon);
-                    const dy = (next?.stop_lat ?? prev?.stop_lat ?? stopData.stop_lat) - (prev?.stop_lat ?? next?.stop_lat ?? stopData.stop_lat);
-
-                    let pos: string;
-                    if (Math.abs(dx) > Math.abs(dy)) {
-                        // Tramo horizontal -> alternar arriba y abajo
-                        pos = idx % 2 === 0 ? 'top center' : 'bottom center';
-                    } else {
-                        // Tramo vertical -> alternar derecha e izquierda
-                        pos = idx % 2 === 0 ? 'middle right' : 'middle left';
-                    }
-                    textPositions.push(pos);
-                } else {
-                    stationLabels.push(cleanName);
-                    textPositions.push('top right');
-                }
 
                 // Tooltip enriquecido
                 if (isComb) {
@@ -318,26 +344,75 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
                     hoverNames.push(`<b>${cleanName}</b><br>Carga: ${volume.toLocaleString()} pax`);
                 }
 
-                // Tamaño y estilo del marcador: las estaciones de combinación actúan como nodos de referencia visuales destacados
-                const baseSize = 7 + (volume / 2500) * 18;
-                const clampedSize = baseSize > 25 ? 25 : baseSize;
+                // Identificación de estaciones: pastillas con fondo y escalonamiento alternado para evitar sobreposiciones
+                if (!isAll) {
+                    const prev = idx > 0 ? validStops[idx - 1].data : null;
+                    const next = idx < validStops.length - 1 ? validStops[idx + 1].data : null;
+                    const dx = (next?.stop_lon ?? prev?.stop_lon ?? stopData.stop_lon) - (prev?.stop_lon ?? next?.stop_lon ?? stopData.stop_lon);
+                    const dy = (next?.stop_lat ?? prev?.stop_lat ?? stopData.stop_lat) - (prev?.stop_lat ?? next?.stop_lat ?? stopData.stop_lat);
+
+                    const isHorizontal = Math.abs(dx) >= Math.abs(dy);
+
+                    // Escalonamiento de 4 niveles alternados: Lejos-arriba, Lejos-abajo, Cerca-arriba, Cerca-abajo
+                    const tier = idx % 4;
+                    let dist = 20;
+                    if (tier === 0) dist = -36;     // Arriba / Izquierda lejos
+                    else if (tier === 1) dist = 36; // Abajo / Derecha lejos
+                    else if (tier === 2) dist = -20;// Arriba / Izquierda cerca
+                    else dist = 20;                 // Abajo / Derecha cerca
+
+                    const ax = isHorizontal ? 0 : dist;
+                    const ay = isHorizontal ? dist : 0;
+
+                    const combBadge = isComb ? ` <span style="color:#38bdf8; font-size:8px;">🔄${otherLines.join('/')}</span>` : '';
+
+                    stationAnnotations.push({
+                        x: stopData.stop_lon,
+                        y: stopData.stop_lat,
+                        xref: 'x',
+                        yref: 'y',
+                        text: `<b>${cleanName}</b>${combBadge}`,
+                        showarrow: true,
+                        arrowhead: 0,
+                        arrowwidth: 1,
+                        arrowcolor: isComb ? 'rgba(56, 189, 248, 0.45)' : 'rgba(255, 255, 255, 0.25)',
+                        ax: ax,
+                        ay: ay,
+                        font: {
+                            family: "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                            size: 9.5,
+                            color: '#f8fafc',
+                        },
+                        bgcolor: 'rgba(15, 23, 42, 0.94)',
+                        bordercolor: isComb ? '#38bdf8' : (LINE_COLORS[line] || 'rgba(255, 255, 255, 0.25)'),
+                        borderwidth: isComb ? 1.5 : 1,
+                        borderpad: 3.5,
+                        opacity: 0.98,
+                        hovertext: `<b>${cleanName}</b><br>Carga: ${volume.toLocaleString()} pax`,
+                    });
+                }
+
+                // Marcadores limpios y proporcionales
+                const baseSize = 6 + (volume / 2500) * 10;
+                const clampedSize = baseSize > 15 ? 15 : baseSize;
 
                 if (!isAll && isComb) {
-                    markerSizes.push(Math.max(14, clampedSize + 4));
-                    markerLineWidths.push(3);
+                    markerSizes.push(Math.max(9, clampedSize + 2));
+                    markerLineWidths.push(2.5);
                 } else {
                     markerSizes.push(clampedSize);
-                    markerLineWidths.push(1.5);
+                    markerLineWidths.push(1.2);
                 }
                 markerColors.push(volume);
             });
 
             traces.push({
                 type: 'scatter',
-                mode: isAll ? 'lines+markers' : 'lines+markers+text',
+                mode: 'lines+markers', // Círculos limpios en el mapa; las etiquetas usan anotaciones tipo pastilla sin solapamiento
                 x: lons,
                 y: lats,
-                line: { color: LINE_COLORS[line] || '#ffffff', width: isAll ? 4 : 5.5 },
+                visible: (isAll && hiddenLines.has(line)) ? 'legendonly' : true,
+                line: { color: LINE_COLORS[line] || '#ffffff', width: isAll ? 3.8 : 4.2 },
                 marker: { 
                     size: markerSizes, 
                     color: markerColors, 
@@ -352,32 +427,44 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
                     line: { color: '#ffffff', width: markerLineWidths }
                 },
                 customdata: markerColors,
-                text: isAll ? hoverNames : stationLabels,
+                text: hoverNames,
                 hovertext: hoverNames,
                 hoverinfo: 'text',
-                textposition: textPositions,
-                textfont: {
-                    color: '#f8fafc',
-                    size: 11,
-                    family: "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                },
                 name: `Línea ${line.replace('L', '')}`,
-                showlegend: isAll
+                showlegend: isAll,
+                meta: { line }
             });
         }
 
-        // 2c. Identificadores de línea con flechas dirigidas (Plotly annotations)
-        // Evita el agrupamiento y solapamiento en terminales y cruces cercanos
+        // 2c. Señalética de identificación: exactamente un identificador por línea de metro con su abreviación oficial
         const annotations: Record<string, unknown>[] = [];
+
+        // Definimos la terminal principal única para cada línea
+        const LINE_PRIMARY_TERMINAL: Record<string, 'start' | 'end'> = {
+            'L1': 'end',   // Los Dominicos (Este)
+            'L2': 'start', // Vespucio Norte (Norte)
+            'L3': 'start', // Plaza Quilicura (Noroeste)
+            'L4': 'end',   // Plaza de Puente Alto (Sureste)
+            'L4A': 'start', // Vicuña Mackenna (Este)
+            'L5': 'start', // Plaza de Maipú (Suroeste)
+            'L6': 'start', // Cerrillos (Suroeste)
+        };
 
         if (isAll) {
             for (const { line, stopTimes } of lineStops) {
+                // Si la línea fue desmarcada en la interfaz de arriba a la izquierda, quitar también su identificador
+                if (hiddenLines.has(line)) continue;
                 if (stopTimes.length === 0) continue;
-                const s0 = stopMap.get(stopTimes[0].stop);
-                const sn = stopMap.get(stopTimes[stopTimes.length - 1].stop);
+                
                 const callout = TERMINAL_CALLOUTS[line];
+                if (!callout) continue;
 
-                const addCallout = (target: Stop, offset: { ax: number; ay: number }) => {
+                const primary = LINE_PRIMARY_TERMINAL[line] || 'start';
+                const targetStopId = primary === 'start' ? stopTimes[0].stop : stopTimes[stopTimes.length - 1].stop;
+                const target = stopMap.get(targetStopId);
+                const offset = primary === 'start' ? callout.start : callout.end;
+
+                if (target) {
                     const cleanTargetName = target.stop_name.split(' Dirección')[0].trim();
                     annotations.push({
                         x: target.stop_lon,
@@ -387,66 +474,70 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
                         text: `<b>${line}</b>`,
                         showarrow: true,
                         arrowhead: 2,
-                        arrowsize: 0.9,
-                        arrowwidth: 1.8,
+                        arrowsize: 1,
+                        arrowwidth: 2,
                         arrowcolor: LINE_COLORS[line] || '#ffffff',
                         ax: offset.ax,
                         ay: offset.ay,
                         font: {
                             family: "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                            size: 11,
+                            size: 11.5,
                             color: BADGE_TEXT_COLORS[line] || '#ffffff',
                         },
                         bgcolor: LINE_COLORS[line] || '#1e293b',
                         bordercolor: '#ffffff',
-                        borderwidth: 1.5,
-                        borderpad: 4,
-                        opacity: 0.96,
+                        borderwidth: 2,
+                        borderpad: 5,
+                        opacity: 0.98,
                         hovertext: `<b>Línea ${line.replace('L', '')}</b> (${cleanTargetName})`,
                     });
-                };
-
-                if (s0 && callout) addCallout(s0, callout.start);
-                if (sn && sn !== s0 && callout) addCallout(sn, callout.end);
+                }
             }
         } else {
-            // En vista de línea individual: señalar terminales de la línea seleccionada con su nombre
+            // En vista de línea individual: agregar las pastillas escalonadas de cada estación
+            annotations.push(...stationAnnotations);
+
+            // Exactamente un identificador claro para la línea seleccionada en su terminal principal
             const currentLineData = lineStops.find(l => l.line === selectedLine);
             if (currentLineData && currentLineData.stopTimes.length > 0) {
-                const s0 = stopMap.get(currentLineData.stopTimes[0].stop);
-                const sn = stopMap.get(currentLineData.stopTimes[currentLineData.stopTimes.length - 1].stop);
                 const callout = TERMINAL_CALLOUTS[selectedLine];
+                if (callout) {
+                    const primary = LINE_PRIMARY_TERMINAL[selectedLine] || 'start';
+                    const targetStopId = primary === 'start' 
+                        ? currentLineData.stopTimes[0].stop 
+                        : currentLineData.stopTimes[currentLineData.stopTimes.length - 1].stop;
+                    const target = stopMap.get(targetStopId);
+                    const offset = primary === 'start' ? callout.start : callout.end;
 
-                const addSingleLineCallout = (target: Stop, offset: { ax: number; ay: number }) => {
-                    const cleanTargetName = target.stop_name.split(' Dirección')[0].trim();
-                    annotations.push({
-                        x: target.stop_lon,
-                        y: target.stop_lat,
-                        xref: 'x',
-                        yref: 'y',
-                        text: `<b>${selectedLine} · ${cleanTargetName}</b>`,
-                        showarrow: true,
-                        arrowhead: 2,
-                        arrowsize: 0.9,
-                        arrowwidth: 1.8,
-                        arrowcolor: LINE_COLORS[selectedLine] || '#ffffff',
-                        ax: offset.ax * 1.25,
-                        ay: offset.ay * 1.25,
-                        font: {
-                            family: "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                            size: 11,
-                            color: BADGE_TEXT_COLORS[selectedLine] || '#ffffff',
-                        },
-                        bgcolor: LINE_COLORS[selectedLine] || '#1e293b',
-                        bordercolor: '#ffffff',
-                        borderwidth: 1.5,
-                        borderpad: 5,
-                        opacity: 0.96,
-                    });
-                };
-
-                if (s0 && callout) addSingleLineCallout(s0, callout.start);
-                if (sn && sn !== s0 && callout) addSingleLineCallout(sn, callout.end);
+                    if (target) {
+                        const cleanTargetName = target.stop_name.split(' Dirección')[0].trim();
+                        annotations.push({
+                            x: target.stop_lon,
+                            y: target.stop_lat,
+                            xref: 'x',
+                            yref: 'y',
+                            text: `<b>${selectedLine}</b>`,
+                            showarrow: true,
+                            arrowhead: 2,
+                            arrowsize: 1,
+                            arrowwidth: 2,
+                            arrowcolor: LINE_COLORS[selectedLine] || '#ffffff',
+                            ax: offset.ax * 1.15,
+                            ay: offset.ay * 1.15,
+                            font: {
+                                family: "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                                size: 12,
+                                color: BADGE_TEXT_COLORS[selectedLine] || '#ffffff',
+                            },
+                            bgcolor: LINE_COLORS[selectedLine] || '#1e293b',
+                            bordercolor: '#ffffff',
+                            borderwidth: 2,
+                            borderpad: 5,
+                            opacity: 0.98,
+                            hovertext: `<b>Línea ${selectedLine.replace('L', '')}</b> (${cleanTargetName})`,
+                        });
+                    }
+                }
             }
         }
         
@@ -467,14 +558,8 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
             });
         }
 
-        // 2d. Calcular límites y márgenes para expandir el mapa al máximo sin sobreponerse con los controles
-        const minLon = activeLons.length > 0 ? Math.min(...activeLons) : -70.76;
-        const maxLon = activeLons.length > 0 ? Math.max(...activeLons) : -70.54;
-        const minLat = activeLats.length > 0 ? Math.min(...activeLats) : -33.62;
-        const maxLat = activeLats.length > 0 ? Math.max(...activeLats) : -33.36;
-
-        const lonSpan = maxLon - minLon || 0.05;
-        const latSpan = maxLat - minLat || 0.05;
+        // 2d. Encuadre personalizado para evitar que las líneas se sobrepongan con la interfaz
+        const selectedFraming = !isAll && LINE_FRAMING[selectedLine] ? LINE_FRAMING[selectedLine] : null;
 
         const layout = {
             paper_bgcolor: 'rgba(0,0,0,0)',
@@ -501,7 +586,7 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
                 fixedrange: true,
                 range: isAll
                     ? [-70.785, -70.525]
-                    : [minLon - lonSpan * 0.12, maxLon + lonSpan * 0.12]
+                    : (selectedFraming ? selectedFraming.lon : [-70.785, -70.525])
             },
             yaxis: {
                 showgrid: false,
@@ -510,13 +595,13 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
                 fixedrange: true,
                 range: isAll
                     ? [-33.625, -33.345]
-                    : [minLat - latSpan * 0.12, maxLat + latSpan * 0.12]
+                    : (selectedFraming ? selectedFraming.lat : [-33.625, -33.345])
             },
             annotations,
-            // Márgenes ultra compactos que expanden el mapa principal al máximo en la pantalla
+            // Márgenes amplios en vista individual para despejar las esquinas donde residen los controles flotantes
             margin: isAll
                 ? { l: 15, r: 85, t: 15, b: 20 }
-                : { l: 35, r: 90, t: 25, b: 35 },
+                : { l: 75, r: 130, t: 35, b: 60 },
             autosize: true,
             dragmode: false // Deshabilita hacer zoom/arrastrar
         };
@@ -528,13 +613,64 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
             window.Plotly.react(mapRef.current, traces, layout, config).then(() => {
                 const node = mapRef.current as PlotlyElement | null;
                 if (node && !node.__eventsBound) {
-                    node.on('plotly_legendclick', () => {
+                    node.on('plotly_legendclick', (eventData: any) => {
                         new Audio(asset('/sound/soft_click.mp3')).play().catch(e => console.error(e));
-                        return true;
+                        
+                        if (eventData && typeof eventData.curveNumber === 'number') {
+                            const trace = eventData.data?.[eventData.curveNumber];
+                            let lineKey: string | null = null;
+                            if (trace?.meta?.line) {
+                                lineKey = trace.meta.line;
+                            } else if (trace?.name) {
+                                const num = trace.name.replace('Línea ', '').trim();
+                                lineKey = `L${num}`;
+                            }
+                            if (!lineKey && ALL_LINES[eventData.curveNumber]) {
+                                lineKey = ALL_LINES[eventData.curveNumber];
+                            }
+                            if (lineKey) {
+                                setHiddenLines(prev => {
+                                    const next = new Set(prev);
+                                    if (next.has(lineKey!)) {
+                                        next.delete(lineKey!);
+                                    } else {
+                                        next.add(lineKey!);
+                                    }
+                                    return next;
+                                });
+                            }
+                        }
+                        // Previene el restyle interno de Plotly para que React coordine tanto la línea como su señalética
+                        return false;
                     });
-                    node.on('plotly_legenddoubleclick', () => {
+                    node.on('plotly_legenddoubleclick', (eventData: any) => {
                         new Audio(asset('/sound/soft_click.mp3')).play().catch(e => console.error(e));
-                        return true;
+                        
+                        if (eventData && typeof eventData.curveNumber === 'number') {
+                            const trace = eventData.data?.[eventData.curveNumber];
+                            let lineKey: string | null = null;
+                            if (trace?.meta?.line) {
+                                lineKey = trace.meta.line;
+                            } else if (trace?.name) {
+                                const num = trace.name.replace('Línea ', '').trim();
+                                lineKey = `L${num}`;
+                            }
+                            if (!lineKey && ALL_LINES[eventData.curveNumber]) {
+                                lineKey = ALL_LINES[eventData.curveNumber];
+                            }
+                            if (lineKey) {
+                                setHiddenLines(prev => {
+                                    const allOtherLines = ALL_LINES.filter(l => l !== lineKey);
+                                    const isOnlyThisVisible = prev.size === ALL_LINES.length - 1 && !prev.has(lineKey!);
+                                    if (isOnlyThisVisible) {
+                                        return new Set();
+                                    } else {
+                                        return new Set(allOtherLines);
+                                    }
+                                });
+                            }
+                        }
+                        return false;
                     });
                     node.on('plotly_hover', (data) => {
                         if (data && data.points && data.points.length > 0) {
@@ -552,7 +688,7 @@ export default function MetroMap({ selectedLine, currentHour, onMetricsUpdate }:
                 }
             });
         }
-    }, [currentHour, networkTopology, allLoadsMap, selectedLine, onMetricsUpdate]);
+    }, [currentHour, networkTopology, allLoadsMap, selectedLine, hiddenLines, onMetricsUpdate]);
 
     return (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>

@@ -104,7 +104,7 @@ export default function Home() {
           <header className={styles['dashboard-header']}>
               <div className={styles['header-titles']}>
                   <Link href="/" style={{ textDecoration: 'none' }}>
-                      <h1 className={styles['project-title']}>Afluencia actual de la red de metro</h1>
+                      <h1 className={styles['project-title']}>MetroVis</h1>
                   </Link>
               </div>
               
@@ -114,8 +114,89 @@ export default function Home() {
               </div>
           </header>
 
-          {/* 3. Plana única (el mapa abarca toda la pantalla sin divisiones) */}
-          <main className={styles['dashboard-main']}>
+          {/* 3. Sección Informativa al comienzo de la página */}
+          <section className={styles['info-section']} id="info-section">
+              <div className={styles['info-container']}>
+                  <h2 className={styles['info-title']}>Nivel de afluencia en el metro</h2>
+                  <p className={styles['info-subtitle']}>
+                      Plataforma interactiva diseñada para la visualización, simulación y comprensión 
+                      de la distribución de pasajeros en la red de Metro de Santiago a lo largo del día.
+                  </p>
+
+                  <div className={styles['info-grid']}>
+                      {/* Tarjeta 1: ¿De qué trata? */}
+                      <div className={styles['info-card']}>
+                          <div className={styles['info-card-header']}>
+                              <span className={styles['info-card-icon']}>🚇</span>
+                              <h3 className={styles['info-card-title']}>¿De qué trata MetroVis?</h3>
+                          </div>
+                          <p className={styles['info-card-text']}>
+                              MetroVis es un simulador analítico que traduce registros reales de transporte en una 
+                              representación visual intuitiva. Permite explorar las 7 líneas operativas del Metro de Santiago 
+                              (L1, L2, L3, L4, L4A, L5 y L6), examinando la concentración de personas y cuellos de botella 
+                              estación por estación.
+                          </p>
+                      </div>
+
+                      {/* Tarjeta 2: Escala Cromática */}
+                      <div className={styles['info-card']}>
+                          <div className={styles['info-card-header']}>
+                              <span className={styles['info-card-icon']}>🎨</span>
+                              <h3 className={styles['info-card-title']}>Escala de Afluencia</h3>
+                          </div>
+                          <p className={styles['info-card-text']}>
+                              El volumen de usuarios por hora se representa visualmente con un gradiente cromático accesible:
+                          </p>
+                          <div className={styles['scale-legend-container']}>
+                              <div className={styles['scale-legend-item']}>
+                                  <span className={styles['scale-dot']} style={{ backgroundColor: '#22c55e' }} />
+                                  <span><strong>Afluencia Baja (&lt; 500 pax):</strong> Flujo expedito y andenes despejados.</span>
+                              </div>
+                              <div className={styles['scale-legend-item']}>
+                                  <span className={styles['scale-dot']} style={{ backgroundColor: '#eab308' }} />
+                                  <span><strong>Afluencia Media (500 – 1.500 pax):</strong> Flujo regular de horarios intermedios.</span>
+                              </div>
+                              <div className={styles['scale-legend-item']}>
+                                  <span className={styles['scale-dot']} style={{ backgroundColor: '#ef4444' }} />
+                                  <span><strong>Afluencia Alta (&gt; 1.500 pax):</strong> Puntos críticos y alta congestión.</span>
+                              </div>
+                          </div>
+                      </div>
+
+                      {/* Tarjeta 3: Horarios y Dinámica */}
+                      <div className={styles['info-card']}>
+                          <div className={styles['info-card-header']}>
+                              <span className={styles['info-card-icon']}>⏱️</span>
+                              <h3 className={styles['info-card-title']}>Dinámica Horaria</h3>
+                          </div>
+                          <p className={styles['info-card-text']}>
+                              La simulación abarca de 06:00 a 23:00 hrs, reflejando las tres fases de la operación diaria:
+                          </p>
+                          <ul style={{ fontSize: '0.88rem', color: '#cbd5e1', paddingLeft: '1.2rem', lineHeight: '1.65', marginTop: '0.35rem' }}>
+                              <li><strong style={{ color: '#ef4444' }}>Horario Punta:</strong> 07:00-08:59 y 18:00-19:59 hrs (máxima demanda laboral).</li>
+                              <li><strong style={{ color: '#22c55e' }}>Horario Valle:</strong> 09:00-17:59 y 20:00-20:59 hrs (circulación fluida).</li>
+                              <li><strong style={{ color: '#3b82f6' }}>Horario Bajo:</strong> 06:00-06:59 y 21:00-23:00 hrs (apertura y cierre).</li>
+                          </ul>
+                      </div>
+                  </div>
+
+                  {/* Botón para saltar al mapa interactivo */}
+                  <button 
+                      onClick={() => {
+                          document.getElementById('map-section')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className={styles['scroll-indicator-bar']}
+                      style={{ position: 'relative', bottom: 'auto', left: 'auto', transform: 'none', margin: '0 auto', padding: '0.65rem 1.75rem', fontSize: '0.88rem' }}
+                      title="Explorar el mapa y simulación"
+                  >
+                      <span>Explorar mapa y simulación</span>
+                      <span style={{ fontSize: '1rem' }}>↓</span>
+                  </button>
+              </div>
+          </section>
+
+          {/* 4. Mapa Interactivo y Simulación al final de la página */}
+          <main className={styles['dashboard-main']} id="map-section">
               {/* Selector de línea flotante arriba centrado */}
               <div className={styles['top-line-selector']}>
                   <span className={styles['top-line-label']}>Línea:</span>
@@ -226,6 +307,18 @@ export default function Home() {
                       </div>
                   </div>
               </div>
+
+              {/* Botón flotante para volver arriba a la información */}
+              <button 
+                  onClick={() => {
+                      document.getElementById('info-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className={styles['scroll-indicator-bar']}
+                  title="Volver a la información"
+              >
+                  <span style={{ fontSize: '0.85rem' }}>↑</span>
+                  <span>Ver información</span>
+              </button>
 
               {/* El mapa abarca toda la plana */}
               <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
