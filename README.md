@@ -1,41 +1,38 @@
 # Metro Sim 🚇
 
-![Versión](https://img.shields.io/badge/versión-1.1-00934F)
+![Versión](https://img.shields.io/badge/versión-1.2-00934F)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![Django](https://img.shields.io/badge/Django-6-0C4B33)
 ![GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-222)
 
-Metro Sim es un sistema integral para la simulación, visualización y análisis de la afluencia de pasajeros en la red del Metro de Santiago.
+Metro Sim (**MetroVis**) es un sistema integral para la simulación, visualización y análisis de la afluencia de pasajeros en la red del Metro de Santiago.
 
 🌐 **Demo en vivo:** https://nicorfdez.github.io/metro-sim/
 
-> **Versión actual: 1.1.** Es la primera versión publicada en GitHub Pages: el frontend funciona como sitio 100 % estático, sin necesidad de levantar el backend.
+> **Versión actual: 1.2.** Rediseño completo de la interfaz con tema oscuro, paleta accesible para daltónicos (Okabe-Ito), sección informativa introductoria y mapa interactivo a pantalla completa con señalética mejorada.
 
 ---
 
-## ✨ Características (v1.1)
+## ✨ Características (v1.2)
 
 ### Visualización
-- **Mapa esquemático interactivo** de las 7 líneas del Metro (L1, L2, L3, L4, L4A, L5 y L6) con los colores oficiales, renderizado con Plotly.
+- **Mapa esquemático interactivo a pantalla completa** de las 7 líneas del Metro (L1, L2, L3, L4, L4A, L5 y L6) renderizado con Plotly sobre tema oscuro (*Slate*).
+- **Paleta de colores accesible para daltónicos (Okabe-Ito / Wong)** aplicada a las líneas del mapa y a la animación de trenes.
+- **Señalética de líneas y combinaciones**: insignias identificadoras en las terminales de cada línea (`L1`–`L6`) e indicadores de combinación (`🔄`) en estaciones de trasbordo.
+- **Vista de línea enfocada**: al seleccionar una línea individual se encuadra automáticamente, el resto de la red se muestra como referencia tenue (*ghost lines*) y se despliegan etiquetas tipo pastilla escalonadas en 4 niveles para evitar solapamientos.
 - **Codificación visual de la afluencia**: tamaño y color de cada estación (verde → amarillo → rojo) según la carga de pasajeros.
-- **Escala cromática flotante** con un indicador que marca el volumen de la estación bajo el cursor.
-- **Tooltips** con el nombre de la estación y la carga en pasajeros.
-- **Leyenda interactiva** para mostrar u ocultar líneas.
+- **Escala cromática vertical flotante** (0 a 2000+ pax) con indicador dinámico y tooltip en vivo al pasar el cursor sobre una estación.
+- **Leyenda interactiva sincronizada** para mostrar, ocultar o aislar líneas junto con su señalética en el mapa.
 
-### Simulación temporal
-- **Línea de tiempo (slider)** para recorrer la afluencia hora a hora entre las 6:00 y las 23:00.
-- **Rango de horas configurable** (hora de inicio y hora de fin).
-- **Reproducción automática** de la simulación (play/pausa).
-- **Clasificación horaria**: *Horario Punta*, *Horario Valle* y *Horario Bajo*, con un indicador de color.
-
-### Análisis
-- **Filtro por línea**: toda la red o una línea específica (al elegir una línea se muestran los nombres de las estaciones).
-- **Ranking en vivo** de las 3 estaciones más congestionadas en la hora seleccionada.
+### Navegación y Simulación temporal
+- **Sección informativa inicial** con tarjetas explicativas (*¿De qué trata MetroVis?*, *Escala de Afluencia* y *Dinámica Horaria*) y navegación fluida hacia el mapa.
+- **Tarjeta de simulación minimalista flotante** con reproducción automática (play/pausa), slider horario (6:00 a 23:00 hrs) y selector compacto de rango de horas.
+- **Clasificación horaria**: *Horario Punta*, *Horario Valle* y *Horario Bajo*, con insignia de color dinámico.
 
 ### Experiencia sonora
 - **Sonificación de datos**: al pasar el cursor sobre una estación suena un tono cuya frecuencia es proporcional a su afluencia (Web Audio API).
 - **Efectos de sonido** del metro: pitido y cierre de puertas al iniciar la simulación, sonido ambiente de viaje en loop, cambio de línea y clic en la leyenda.
-- **Animación de trenes** en el encabezado con los colores de cada línea.
+- **Animación de trenes** en el encabezado con los colores accesibles de cada línea.
 
 ---
 
@@ -166,7 +163,21 @@ python3 -m http.server -d /tmp/site 8080
 
 ## 📜 Historial de Versiones
 
-### v1.1: Publicación en GitHub Pages (actual)
+### v1.2: Rediseño de interfaz (MetroVis), accesibilidad y mapa a pantalla completa (actual)
+
+- **Identidad y tema oscuro (*Slate*)**: nueva interfaz bajo el nombre **MetroVis** con fondo oscuro de alto contraste (`#0f172a` / `#1e293b`), tarjetas translúcidas (*glassmorphism*) y encabezado compacto.
+- **Paleta accesible para daltónicos (Okabe-Ito / Wong)**: nuevos colores de alto contraste para las 7 líneas del Metro y la animación de trenes.
+- **Sección informativa introductoria**: vista inicial con tres tarjetas explicativas (*¿De qué trata MetroVis?*, *Escala de Afluencia* y *Dinámica Horaria*) y botones de desplazamiento suave (`Explorar mapa y simulación` / `Ver información`).
+- **Mapa interactivo a pantalla completa con controles flotantes**:
+  - Selector de línea compacto en la parte superior central.
+  - Tarjeta de simulación minimalista en la esquina inferior izquierda (botón circular play/pausa, hora actual, insignia de horario, slider y rango horario).
+  - Escala cromática vertical flotante a la derecha (0 a 2000+ pasajeros) con indicador y tooltip dinámico al pasar el cursor sobre una estación.
+- **Señalética y vista por línea mejorada**:
+  - Insignias identificadoras (`L1`–`L6`) con flechas en las estaciones terminales principales de cada línea, sincronizadas con el clic y doble clic de la leyenda.
+  - Red de referencia tenue (*ghost lines* punteadas) al inspeccionar una línea individual, con encuadre dedicado por línea (`LINE_FRAMING`) y bloqueo de zoom/arrastre para evitar solapamientos con la interfaz.
+  - Etiquetas de estaciones tipo pastilla escalonadas en 4 niveles alternados e indicadores de combinación (`🔄 Comb.`) en etiquetas y tooltips.
+
+### v1.1: Publicación en GitHub Pages
 
 ![Captura de pantalla de Metro Sim v1.1](docs/screenshots/metro-sim-v1.1.png)
 
