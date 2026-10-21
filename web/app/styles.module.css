@@ -1,6 +1,7 @@
 .dashboard-container {
     display: flex;
     flex-direction: column;
+    height: 100vh;
     min-height: 100vh;
     width: 100%;
     background: var(--bg-base);
@@ -514,4 +515,58 @@
     gap: 1rem;
     font-size: 0.85rem;
     color: var(--text-secondary);
+}
+
+/* 6. Pie de Página (Footer) */
+.dashboard-footer {
+    width: 100%;
+    background-color: var(--bg-surface);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 1.35rem 1.75rem;
+    flex-shrink: 0;
+    z-index: 10;
+}
+
+.footer-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+.footer-disclaimer {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    max-width: 780px;
+}
+
+.footer-disclaimer strong {
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+.footer-repo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.5rem 1rem;
+    background-color: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 9999px;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.footer-repo-link:hover {
+    background-color: rgba(51, 65, 85, 0.9);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
 }
