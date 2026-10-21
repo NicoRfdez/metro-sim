@@ -1,6 +1,6 @@
 # Metro Sim 🚇
 
-![Versión](https://img.shields.io/badge/versión-1.2-00934F)
+![Versión](https://img.shields.io/badge/versión-1.3-00934F)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![Django](https://img.shields.io/badge/Django-6-0C4B33)
 ![GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-222)
@@ -9,14 +9,15 @@ Metro Sim (**MetroVis**) es un sistema integral para la simulación, visualizaci
 
 🌐 **Demo en vivo:** https://nicorfdez.github.io/metro-sim/
 
-> **Versión actual: 1.2.** Rediseño completo de la interfaz con tema oscuro, paleta accesible para daltónicos (Okabe-Ito), sección informativa introductoria y mapa interactivo a pantalla completa con señalética mejorada.
+> **Versión actual: 1.3.** Incorporación de ícono oficial de pestaña para **MetroVis**, nuevo sonido corto de inicio para la simulación horaria y pie de página con aviso de atribución de datos públicos del **DTPM** y enlace directo al repositorio en GitHub.
 
 ---
 
-## ✨ Características (v1.2)
+## ✨ Características (v1.3)
 
-### Visualización
+### Visualización e Identidad
 - **Mapa esquemático interactivo a pantalla completa** de las 7 líneas del Metro (L1, L2, L3, L4, L4A, L5 y L6) renderizado con Plotly sobre tema oscuro (*Slate*).
+- **Ícono personalizado de MetroVis** en la pestaña del navegador (`favicon.ico`, `icon.png` y `apple-icon.png`) generado a partir del arte en `docs/icons/icon_metrovis.jpeg`.
 - **Paleta de colores accesible para daltónicos (Okabe-Ito / Wong)** aplicada a las líneas del mapa y a la animación de trenes.
 - **Señalética de líneas y combinaciones**: insignias identificadoras en las terminales de cada línea (`L1`–`L6`) e indicadores de combinación (`🔄`) en estaciones de trasbordo.
 - **Vista de línea enfocada**: al seleccionar una línea individual se encuadra automáticamente, el resto de la red se muestra como referencia tenue (*ghost lines*) y se despliegan etiquetas tipo pastilla escalonadas en 4 niveles para evitar solapamientos.
@@ -24,14 +25,15 @@ Metro Sim (**MetroVis**) es un sistema integral para la simulación, visualizaci
 - **Escala cromática vertical flotante** (0 a 2000+ pax) con indicador dinámico y tooltip en vivo al pasar el cursor sobre una estación.
 - **Leyenda interactiva sincronizada** para mostrar, ocultar o aislar líneas junto con su señalética en el mapa.
 
-### Navegación y Simulación temporal
+### Navegación, Simulación temporal y Pie de página
 - **Sección informativa inicial** con tarjetas explicativas (*¿De qué trata MetroVis?*, *Escala de Afluencia* y *Dinámica Horaria*) y navegación fluida hacia el mapa.
 - **Tarjeta de simulación minimalista flotante** con reproducción automática (play/pausa), slider horario (6:00 a 23:00 hrs) y selector compacto de rango de horas.
 - **Clasificación horaria**: *Horario Punta*, *Horario Valle* y *Horario Bajo*, con insignia de color dinámico.
+- **Pie de página informativo**: incluye aclaración sobre la naturaleza independiente del proyecto (sin afiliación con Metro de Santiago, elaborado con datos públicos del **DTPM**) y botón de acceso directo al repositorio en GitHub.
 
 ### Experiencia sonora
 - **Sonificación de datos**: al pasar el cursor sobre una estación suena un tono cuya frecuencia es proporcional a su afluencia (Web Audio API).
-- **Efectos de sonido** del metro: pitido y cierre de puertas al iniciar la simulación, sonido ambiente de viaje en loop, cambio de línea y clic en la leyenda.
+- **Efectos de sonido discretos**: tono corto y suave de dos notas ascendentes (`play_start.wav`) que suena únicamente al iniciar la reproducción horaria (Play), además de efectos sutiles al cambiar de línea y al interactuar con la leyenda.
 - **Animación de trenes** en el encabezado con los colores accesibles de cada línea.
 
 ---
@@ -45,7 +47,7 @@ Metro Sim (**MetroVis**) es un sistema integral para la simulación, visualizaci
 - **`/data`**: Datos crudos (archivos GTFS como `routes.txt`, `trips.txt`, `stop_times.txt` y `stops.txt`). No se versiona.
 - **`/analisis`**: Scripts y Jupyter Notebooks para el análisis de los datos de transporte público.
 - **`/hardware`**: Código fuente y esquemáticos de los componentes de hardware del simulador.
-- **`/docs`**: Documentación y capturas de pantalla de la plataforma.
+- **`/docs`**: Documentación, íconos (`docs/icons/`) y capturas de pantalla (`docs/screenshots/`) de la plataforma.
 - **`extract_metro.py`**: Script ETL que procesa los GTFS crudos.
 - **`.github/workflows/deploy.yml`**: Pipeline de despliegue automático a GitHub Pages.
 
@@ -163,7 +165,16 @@ python3 -m http.server -d /tmp/site 8080
 
 ## 📜 Historial de Versiones
 
-### v1.2: Rediseño de interfaz (MetroVis), accesibilidad y mapa a pantalla completa (actual)
+### v1.3: Identidad visual en pestaña, mejora sonora y pie de página (actual)
+
+- **Ícono de la página web (Favicon / App Icon)**:
+  - Incorporación del ícono oficial de **MetroVis** en [`docs/icons/icon_metrovis.jpeg`](docs/icons/icon_metrovis.jpeg), procesado con esquinas redondeadas transparentes para su visualización en navegadores y dispositivos móviles (`web/app/favicon.ico`, `web/app/icon.png` y `web/app/apple-icon.png`).
+- **Mejora del sonido de inicio de la visualización**:
+  - Se reemplazó la secuencia anterior (pitido, cierre de puertas y bucle de viaje) por un sonido de inicio corto, suave y agradable ([`web/public/sound/play_start.wav`](web/public/sound/play_start.wav), de `0.28s`), que se reproduce únicamente una vez al presionar el botón **Play** del rango horario.
+- **Pie de página (Footer) informativo y enlace al repositorio**:
+  - Se añadió un pie de página al final de la aplicación con acceso directo al [repositorio en GitHub](https://github.com/NicoRfdez/metro-sim) y una aclaración explícita de que el proyecto no forma parte ni tiene afiliación con la empresa **Metro de Santiago**, sino que fue desarrollado utilizando datos públicos otorgados por el **DTPM (Directorio de Transporte Público Metropolitano)**.
+
+### v1.2: Rediseño de interfaz (MetroVis), accesibilidad y mapa a pantalla completa
 
 - **Identidad y tema oscuro (*Slate*)**: nueva interfaz bajo el nombre **MetroVis** con fondo oscuro de alto contraste (`#0f172a` / `#1e293b`), tarjetas translúcidas (*glassmorphism*) y encabezado compacto.
 - **Paleta accesible para daltónicos (Okabe-Ito / Wong)**: nuevos colores de alto contraste para las 7 líneas del Metro y la animación de trenes.
