@@ -17,27 +17,12 @@ export default function Home() {
   const [, setMetrics] = useState<MapMetrics>({ totalPax: 0, averagePax: 0, topStations: [] });
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const beepAudioRef = useRef<HTMLAudioElement | null>(null);
-  const doorsAudioRef = useRef<HTMLAudioElement | null>(null);
-  const metroAudioRef = useRef<HTMLAudioElement | null>(null);
-  const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const playStartAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-        beepAudioRef.current = new Audio(asset('/sound/beep.mp3'));
-        
-        doorsAudioRef.current = new Audio(asset('/sound/cierre_puertas.wav'));
-        doorsAudioRef.current.playbackRate = 1.5;
-        
-        metroAudioRef.current = new Audio(asset('/sound/sonidometro.mp3'));
-        metroAudioRef.current.volume = 0.2; // softer volume
-        metroAudioRef.current.loop = true; // looping
-        
-        const handleDoorsEnd = () => {
-            metroAudioRef.current?.play().catch(e => console.error("Error playing metro sound:", e));
-        };
-        doorsAudioRef.current.addEventListener('ended', handleDoorsEnd);
-        return () => doorsAudioRef.current?.removeEventListener('ended', handleDoorsEnd);
+      playStartAudioRef.current = new Audio(asset('/sound/play_start.wav'));
+      playStartAudioRef.current.volume = 0.6;
     }
   }, []);
 
@@ -48,12 +33,6 @@ export default function Home() {
 
   useEffect(() => {
     if (isPlaying) {
-      // Start sounds sequence
-      beepAudioRef.current?.play().catch(e => console.error(e));
-      playTimeoutRef.current = setTimeout(() => {
-          doorsAudioRef.current?.play().catch(e => console.error(e));
-      }, 500);
-
       // Start tick
       intervalRef.current = setInterval(() => {
         setCurrentHour((prev) => {
@@ -65,28 +44,12 @@ export default function Home() {
         });
       }, 1000);
     } else {
-      // Pause sequence
-      if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
-      
-      if (beepAudioRef.current) {
-          beepAudioRef.current.pause();
-          beepAudioRef.current.currentTime = 0;
-      }
-      if (doorsAudioRef.current) {
-          doorsAudioRef.current.pause();
-          doorsAudioRef.current.currentTime = 0;
-      }
-      if (metroAudioRef.current) {
-          metroAudioRef.current.pause();
-      }
-
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     }
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      if (playTimeoutRef.current) clearTimeout(playTimeoutRef.current);
     };
   }, [isPlaying, endHour]);
   const timeCategory = (() => {
@@ -226,8 +189,14 @@ export default function Home() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                           <button 
                               onClick={() => {
-                                  if (!isPlaying && currentHour >= endHour) {
-                                      setCurrentHour(startHour);
+                                  if (!isPlaying) {
+                                      if (currentHour >= endHour) {
+                                          setCurrentHour(startHour);
+                                      }
+                                      if (playStartAudioRef.current) {
+                                          playStartAudioRef.current.currentTime = 0;
+                                          playStartAudioRef.current.play().catch(e => console.error(e));
+                                      }
                                   }
                                   setIsPlaying(!isPlaying);
                               }}
